@@ -1,5 +1,6 @@
 #include "motors.h"
 
+#include "Wire.h"
 #include "PWM.h"              // PWM Frequency Library at https://code.google.com/archive/p/arduino-pwm-frequency-library/downloads
 #include "EnableInterrupt.h"  // Enable Interrupt library
 #include "digitalWriteFast.h" // DigitalWriteFast Library
@@ -45,7 +46,28 @@ void Motors::setPowerFactor(float value) {
 }
 
 void Motors::setPower(float p1, float p2) {
+  if (p1 < 0) {
+    digitalWriteFast(LeftMotorIn1, LOW);
+    digitalWriteFast(LeftMotorIn2, HIGH);
+  }
+  else {
+    digitalWriteFast(LeftMotorIn1, HIGH);
+    digitalWriteFast(LeftMotorIn2, LOW);
+  }
 
+  if (p2 < 0) {
+    digitalWriteFast(RightMotorIn1, LOW);
+    digitalWriteFast(RightMotorIn2, HIGH);
+  }
+  else {
+    digitalWriteFast(RightMotorIn1, HIGH);
+    digitalWriteFast(RightMotorIn2, LOW);
+  }
+
+  uint8_t realP1 = max(abs(p1 * powerFactor) * 255, 255);
+  uint8_t realP2 = max(abs(p2 * powerFactor) * 255, 255);
+  pwmWrite(LeftMotorPWM, realP1);
+  pwmWrite(RightMotorPWM, realP2);
 }
 
 void Motors::standby() {
