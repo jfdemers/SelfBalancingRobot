@@ -64,8 +64,8 @@ void Motors::setPower(float p1, float p2) {
     digitalWriteFast(RightMotorIn2, LOW);
   }
 
-  uint8_t realP1 = max(abs(p1 * powerFactor) * 255, 255);
-  uint8_t realP2 = max(abs(p2 * powerFactor) * 255, 255);
+  uint8_t realP1 = max(abs(p1 * powerFactor) * 255.0f, 255.0f);
+  uint8_t realP2 = max(abs(p2 * powerFactor) * 255.0f, 255.0f);
   pwmWrite(LeftMotorPWM, realP1);
   pwmWrite(RightMotorPWM, realP2);
 }
