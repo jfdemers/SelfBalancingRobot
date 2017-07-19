@@ -1,0 +1,47 @@
+#ifndef _ROBOT_H
+#define _ROBOT_H
+
+#define RightEncoderPinA  2
+#define RightEncoderPinB  13
+
+#define LeftEncoderPinA   3
+#define LeftEncoderPinB   12
+
+#define StandbyPin        6
+
+#define LeftMotorIn1      4
+#define LeftMotorIn2      5
+#define LeftMotorPWM      10
+
+#define RightMotorIn1     7
+#define RightMotorIn2     8
+#define RightMotorPWM     9
+
+#define RadioDataPin      11
+
+#define PushButtonPin     A7
+
+#define VoltSensorPin     A0
+
+#define SerialSpeed       19200
+
+#define voltageUnit       (5.0 * 37.0 / 15.0 / 1023.0)
+
+class Robot {
+public:
+  Robot();
+
+  void setup();
+  void run();
+
+private:
+  void initializeMPU();
+  void checkVoltage();
+
+  void waitForButton();
+
+  float voltage;
+  bool voltageLow;
+};
+
+#endif
