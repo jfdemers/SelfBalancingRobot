@@ -1,6 +1,12 @@
 #include "robot.h"
 
-#include "Display.h"
+#include "display.h"
+#include "motors.h"
+
+Motors motors;
+
+float power = 0;
+float increment = 0.01;
 
 Robot::Robot() {
   // Set an initial value of 10V. It will change rapidly once we
@@ -14,6 +20,10 @@ void Robot::setup() {
   // Wait before sending commands to the display.
   delay(100);
   Display::setDisplay(Display::no_cursor);
+
+  motors.initialize();
+  motors.standby();
+
   Display::clear();
   Display::setPos(2, 0);
   Serial.print("Lay robot down");
@@ -25,6 +35,8 @@ void Robot::setup() {
 
   waitForButton();
 
+  motors.resume();
+
   Display::clear();
   Display::setPos(0,0);
   Serial.print("Voltage:");
@@ -34,11 +46,22 @@ void Robot::run() {
   if (!voltageLow) {
     Display::setPos(9, 0);
     Serial.print(voltage, 1);
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(10);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(10);
     checkVoltage();
+    motors.update();
+
+    if (power > 1.0f && increment > 0.0f) {
+      increment = -0.01;
+    }
+
+    if (power < -1.0f && increment < 0.0f) {
+      increment = 0.01;
+    }
+
+    motors.setPower(power, power);
+    //Display::setPos(0, 0);
+    //Serial.print(power, 2);
+
+    power += increment;
   }
   else {
     Display::clear();
@@ -46,7 +69,10 @@ void Robot::run() {
     Serial.print("Voltage too low.");
     Display::setPos(0, 1);
     Serial.print("Charge batteries");
+    motors.standby();
   }
+
+  delay(100);
 }
 
 void Robot::checkVoltage() {

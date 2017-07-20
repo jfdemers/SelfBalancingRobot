@@ -9,8 +9,8 @@
 
 #define StandbyPin        6
 
-#define LeftMotorIn1      4
-#define LeftMotorIn2      5
+#define LeftMotorIn1      5
+#define LeftMotorIn2      4
 #define LeftMotorPWM      10
 
 #define RightMotorIn1     7
