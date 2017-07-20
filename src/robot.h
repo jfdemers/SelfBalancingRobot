@@ -4,6 +4,7 @@
 #include "config.h"
 
 #include "motors.h"
+#include "mpu.h"
 
 class Robot {
 public:
@@ -17,11 +18,16 @@ private:
   void checkVoltage();
 
   void waitForButton();
+  void standUp();
 
   float voltage;
   bool voltageLow;
 
+  float PitchEst;
+  float BiasEst;
+
   Motors motors;
+  MPU mpu;
 };
 
 #endif

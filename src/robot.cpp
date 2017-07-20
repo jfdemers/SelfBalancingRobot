@@ -2,10 +2,9 @@
 
 #include "display.h"
 #include "motors.h"
+#include "mpu.h"
 
 #define DISPLAY_SPEED
-
-Motors motors;
 
 float power = 0;
 float increment = 0.01;
@@ -24,7 +23,10 @@ void Robot::setup() {
   Display::setDisplay(Display::no_cursor);
 
   motors.initialize();
+  motors.stop();
   motors.standby();
+
+  mpu.initialize();
 
   Display::clear();
   Display::setPos(2, 0);
@@ -33,9 +35,13 @@ void Robot::setup() {
   Serial.print("and press button");
   pinMode(LED_BUILTIN, OUTPUT);
 
-  motors.stop();
-
   waitForButton();
+
+  while (mpu.calibrateYGyro()) {
+
+  }
+
+  standUp();
 
   motors.resume();
 
@@ -100,4 +106,34 @@ void Robot::waitForButton() {
   // invalid readings.
   while (analogRead(PushButtonPin) < 800) {
   }
+}
+
+void Robot::standUp() {
+  Display::clear();
+  Serial.print("Stand & Push Btn");
+
+  int button_pushed = 0;
+  unsigned long timer;
+  while (!button_pushed) {  // Calculate and display pitch until button pushed
+    timer = millis();
+    PitchEst = 0;
+    for (int i = 0; i < 50; i++) {  // Average 50 samples
+      mpu.readIMUData();
+      PitchEst += mpu.getAccAngle();
+      if (analogRead(PushButtonPin) > 800) {
+        button_pushed = 1;
+      }
+    }
+    PitchEst /= 50.0f;
+
+    Display::setPos(0, 0);
+    Serial.print("Pitch: ");
+    Serial.print(PitchEst);
+    while (millis() < timer + 250) {
+      if (analogRead(PushButtonPin) > 800) {
+        button_pushed = 1;
+      }
+    }
+  }
+  BiasEst = 0;
 }

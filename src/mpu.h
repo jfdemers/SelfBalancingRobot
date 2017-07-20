@@ -7,7 +7,7 @@ class MPU {
 public:
   void initialize();
 
-  void update();
+  void readIMUData();
   inline float getAccAngle() const { return accAngle; }
   inline float getGyroRate() const { return gyroRate; }
 
@@ -19,7 +19,6 @@ private:
   float gyroYZero;
   static uint8_t i2cBuffer[14];
 
-  void readIMUData();
   uint8_t i2cWrite(uint8_t registerAddress, uint8_t data, bool sendStop);
   uint8_t i2cWriteBuffer(uint8_t registerAddress, uint8_t *data, uint8_t length, bool sendStop);
   uint8_t i2cRead(uint8_t registerAddress, uint8_t nbytes);

@@ -4,6 +4,8 @@
 
 #define IMU uint8_t(0x68)
 
+uint8_t MPU::i2cBuffer[14];
+
 void MPU::initialize() {
   Wire.begin();
   Wire.setClock(400000UL); // Set I2C frequency to 400kHz
