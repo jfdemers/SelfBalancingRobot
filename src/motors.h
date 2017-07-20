@@ -14,7 +14,10 @@ public:
   void standby();
   void resume();
 
+  // Velocity in degrees per second
   inline float getVelocity() const { return velocity; }
+
+  // Rotation in degrees
   inline float getRotation() const { return rotation; }
 
   // Must be called often. It will update velocity and rotation
@@ -26,7 +29,7 @@ private:
   int topValue;
 
   float velocity;
-  float wheelPosition;
+  float lastWheelPosition;
   float rotation;
 
   long leftEncoderTicks;

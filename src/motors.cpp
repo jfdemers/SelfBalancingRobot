@@ -8,6 +8,13 @@
 
 #define PWM_FREQUENCY   10000
 
+#define WHEEL_DIAMETER  78.0f
+#define WHEELS_DISTANCE 173.0f
+#define TICKS_PER_TURN  90.0f
+#define DEG_PER_TICK    (360.0f / TICKS_PER_TURN)
+
+#define REVERSE_RIGHT_ENCODER
+
 //#define LEFT_ENCODER_FLAG   0x01
 //#define RIGHT_ENCODER_FLAG  0x02
 
@@ -30,12 +37,17 @@ static void handleLeftEncoderInt() {
 static void handleRightEncoderInt() {
   RightEncoderBValue = digitalReadFast(RightEncoderPinB);
 
-  RightEncoderTicks += RightEncoderBValue ? -1 : +1;
+  #ifdef REVERSE_RIGHT_ENCODER
+  RightEncoderTicks += RightEncoderBValue ? 1 : -1;
+  #else
+  RightEncoderTicks += RightEncoderBValue ? -1 : 1;
+  #endif
   //flags |= RIGHT_ENCODER_FLAG;
 }
 
 Motors::Motors() {
   powerFactor = 1.0;
+  lastWheelPosition = 0;
 }
 
 void Motors::initialize() {
@@ -124,8 +136,8 @@ void Motors::stop() {
   digitalWriteFast(LeftMotorIn2, LOW);
   digitalWriteFast(RightMotorIn1, LOW);
   digitalWriteFast(RightMotorIn2, LOW);
-  //pwmWrite(LeftMotorPWM, 0);
-  //pwmWrite(RightMotorPWM, 0);
+  pwmWriteHR(LeftMotorPWM, 0);
+  pwmWriteHR(RightMotorPWM, 0);
 }
 
 void Motors::update() {
@@ -141,5 +153,10 @@ void Motors::update() {
     rightEncoderTicks = RightEncoderTicks;
 
     interrupts();
+
+    float wheelPosition = 0.5 * (leftEncoderTicks + rightEncoderTicks) * DEG_PER_TICK; //0.5 * (leftEncoderTicks + rightEncoderTicks) * DEG_PER_TICK;
+    velocity = 10.0f * (wheelPosition - lastWheelPosition);
+    rotation = 0.5f * (leftEncoderTicks - rightEncoderTicks) * DEG_PER_TICK * (WHEEL_DIAMETER / WHEELS_DISTANCE);
+    lastWheelPosition = wheelPosition;
   }
 }

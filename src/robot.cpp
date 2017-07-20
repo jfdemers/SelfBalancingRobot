@@ -3,6 +3,8 @@
 #include "display.h"
 #include "motors.h"
 
+#define DISPLAY_SPEED
+
 Motors motors;
 
 float power = 0;
@@ -49,17 +51,22 @@ void Robot::run() {
     checkVoltage();
     motors.update();
 
-    if (power > 1.0f && increment > 0.0f) {
+    /*if (power > 1.0f && increment > 0.0f) {
       increment = -0.01;
     }
 
     if (power < -1.0f && increment < 0.0f) {
       increment = 0.01;
-    }
+    }*/
 
-    motors.setPower(power, power);
-    //Display::setPos(0, 0);
-    //Serial.print(power, 2);
+    motors.setPower(0.5f, 0.5f);
+
+    #ifdef DISPLAY_SPEED
+    Display::setPos(0, 1);
+    Serial.print(motors.getVelocity(), 2);
+    Display::setPos(8, 1);
+    Serial.print(motors.getRotation());
+    #endif
 
     power += increment;
   }
