@@ -8,7 +8,7 @@ public:
   void initialize();
 
   void readIMUData();
-  inline float getAccAngle() const { return accAngle; }
+  inline double getAccAngle() const { return accAngle; }
   inline float getGyroRate() const { return gyroRate; }
 
   bool calibrateYGyro();

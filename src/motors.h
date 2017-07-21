@@ -13,12 +13,15 @@ public:
   void stop();
   void standby();
   void resume();
+  void reset();
 
   // Velocity in degrees per second
-  inline float getVelocity() const { return velocity; }
+  inline double getVelocity() const { return velocity; }
 
   // Rotation in degrees
-  inline float getRotation() const { return rotation; }
+  inline double getRotation() const { return rotation; }
+
+  inline double getWheelPosition() const { return wheelPosition; }
 
   // Must be called often. It will update velocity and rotation
   // 10 times per second.
@@ -28,9 +31,9 @@ private:
   float powerFactor;
   int topValue;
 
-  float velocity;
-  float lastWheelPosition;
-  float rotation;
+  double velocity;
+  double wheelPosition;
+  double rotation;
 
   long leftEncoderTicks;
   long rightEncoderTicks;

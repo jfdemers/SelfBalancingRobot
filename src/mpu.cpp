@@ -2,7 +2,8 @@
 
 #include "Arduino.h"
 
-#define IMU uint8_t(0x68)
+#define IMU           uint8_t(0x68)
+#define PITCH_CORRECT 1.6f        // This is specific to my chip.
 
 uint8_t MPU::i2cBuffer[14];
 
@@ -31,7 +32,7 @@ void MPU::readIMUData() {
   int16_t AcZ = ((i2cBuffer[4] << 8) | i2cBuffer[5]);
   int16_t GyY = ((i2cBuffer[10] << 8) | i2cBuffer[11]);
 
-  accAngle = -atan2((float)AcX, (float)AcZ) * RAD_TO_DEG;
+  accAngle = -atan2((float)AcX, (float)AcZ) * RAD_TO_DEG + PITCH_CORRECT;
   gyroRate = (float)GyY / 131.0f - gyroYZero; // Convert to deg/s
 }
 

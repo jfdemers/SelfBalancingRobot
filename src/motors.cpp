@@ -1,7 +1,12 @@
 #include "motors.h"
 
+#define USE_ANALOG_WRITE
+
 #include "Wire.h"
-#include "PWM.h"              // PWM Frequency Library at https://code.google.com/archive/p/arduino-pwm-frequency-library/downloads
+
+#ifndef USE_ANALOG_WRITE
+  #include "PWM.h"              // PWM Frequency Library at https://code.google.com/archive/p/arduino-pwm-frequency-library/downloads
+#endif
 #include "EnableInterrupt.h"  // Enable Interrupt library
 #include "digitalWriteFast.h" // DigitalWriteFast Library
 #include "display.h"
@@ -47,7 +52,7 @@ static void handleRightEncoderInt() {
 
 Motors::Motors() {
   powerFactor = 1.0;
-  lastWheelPosition = 0;
+  wheelPosition = 0;
 }
 
 void Motors::initialize() {
@@ -77,9 +82,14 @@ void Motors::initialize() {
   digitalWrite(RightEncoderPinB, HIGH);
 
   // Setup the motors PWM pins
+  #ifndef USE_ANALOG_WRITE
   InitTimersSafe();
   SetPinFrequency(LeftMotorPWM, PWM_FREQUENCY);
   SetPinFrequency(RightMotorPWM,  PWM_FREQUENCY);
+  #else
+  pinMode(LeftMotorPWM, OUTPUT);
+  pinMode(RightMotorPWM, OUTPUT);
+  #endif
 
   // Enable interrupts for the encoders
   enableInterrupt(LeftEncoderPinA, handleLeftEncoderInt, RISING);
@@ -111,16 +121,19 @@ void Motors::setPower(float p1, float p2) {
     digitalWriteFast(RightMotorIn2, LOW);
   }
 
+  #ifndef USE_ANALOG_WRITE
   unsigned int realP1 = 65535 * fmin(fabs(p1 * powerFactor), 1.0f);
   unsigned int realP2 = 65535 * fmin(fabs(p2 * powerFactor), 1.0f);
 
-  /*Display::setPos(0, 0);
-  Serial.print(p1); Serial.print("; "); Serial.print(p2);
-  Display::setPos(0, 1);
-  Serial.print(realP1); Serial.print("; "); Serial.print(realP2);*/
-
   pwmWriteHR(LeftMotorPWM, realP1);
   pwmWriteHR(RightMotorPWM, realP2);
+  #else
+  unsigned int realP1 = 255 * fmin(fabs(p1 * powerFactor), 1.0f);
+  unsigned int realP2 = 255 * fmin(fabs(p2 * powerFactor), 1.0f);
+
+  analogWrite(LeftMotorPWM, realP1);
+  analogWrite(RightMotorPWM, realP2);
+  #endif
 }
 
 void Motors::standby() {
@@ -136,8 +149,14 @@ void Motors::stop() {
   digitalWriteFast(LeftMotorIn2, LOW);
   digitalWriteFast(RightMotorIn1, LOW);
   digitalWriteFast(RightMotorIn2, LOW);
+
+  #ifndef USE_ANALOG_WRITE
   pwmWriteHR(LeftMotorPWM, 0);
   pwmWriteHR(RightMotorPWM, 0);
+  #else
+  analogWrite(LeftMotorPWM, 0);
+  analogWrite(RightMotorPWM, 0);
+  #endif
 }
 
 void Motors::update() {
@@ -154,9 +173,18 @@ void Motors::update() {
 
     interrupts();
 
-    float wheelPosition = 0.5 * (leftEncoderTicks + rightEncoderTicks) * DEG_PER_TICK; //0.5 * (leftEncoderTicks + rightEncoderTicks) * DEG_PER_TICK;
+    double lastWheelPosition = wheelPosition;
+    wheelPosition = 0.5 * (leftEncoderTicks + rightEncoderTicks) * DEG_PER_TICK; //0.5 * (leftEncoderTicks + rightEncoderTicks) * DEG_PER_TICK;
     velocity = 10.0f * (wheelPosition - lastWheelPosition);
     rotation = 0.5f * (leftEncoderTicks - rightEncoderTicks) * DEG_PER_TICK * (WHEEL_DIAMETER / WHEELS_DISTANCE);
-    lastWheelPosition = wheelPosition;
   }
+}
+
+void Motors::reset() {
+  lastTime = millis();
+  leftEncoderTicks = 0;
+  rightEncoderTicks = 0;
+  velocity = 0;
+  rotation = 0;
+  wheelPosition = 0;
 }
