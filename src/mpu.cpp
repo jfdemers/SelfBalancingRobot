@@ -3,7 +3,7 @@
 #include "Arduino.h"
 
 #define IMU           uint8_t(0x68)
-#define PITCH_CORRECT 1.6f        // This is specific to my chip.
+#define PITCH_CORRECT 3.2f        // This is specific to my chip.
 
 uint8_t MPU::i2cBuffer[14];
 

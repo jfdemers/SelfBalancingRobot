@@ -5,14 +5,14 @@
 #include "mpu.h"
 
 #define DISPLAY_SPEED
-#define CALCTIME
+//#define CALCTIME
 
 float power = 0;
 float increment = 0.01;
 
-#define K_p 15.0f
-#define K_i 100.0f
-#define K_d 0.15f
+#define K_p 0.15f   // 15 original
+#define K_i 1.0f  // 100 original
+#define K_d 0.0f   // 0.15 original
 #define MaxAngleOffset 5.5f
 #define wheelRateGain 0.003f
 #define wheelPosGain 0.0015f
@@ -155,6 +155,7 @@ void Robot::run() {
     AngleOffset = constrain(AngleOffset, -MaxAngleOffset, MaxAngleOffset);  // Additional limiter after outer loop
 
     Error = AngleOffset - PitchEst;
+    //Error = 0 - PitchEst;
     IntState = IntState + Error / FHz;
     IntState = constrain(IntState, -5.0f, 5.0f);
 
@@ -190,16 +191,22 @@ void Robot::run() {
     TurnTorque = 0;
   }
 
-  //motors.setPower((TorqueCMD - TurnTorque), (TorqueCMD + TurnTorque));
-  static float direction = 1.0f;
+  motors.setPower((TorqueCMD - TurnTorque), (TorqueCMD + TurnTorque));
+  /*static float direction = 1.0f;
   static unsigned long dirTime = 0;
   dirTime += 1;
 
   if (dirTime > 20) {
-    direction = direction * -1.0f;
+    if (direction <= 0) {
+      direction = 1.0f;
+    }
+    else if (direction >= 1.0) {
+      direction = -1.0f;
+    }
+    //direction = direction * -1.0f;
     dirTime = 0;
   }
-  motors.setPower(1.0f * direction, 1.0f * direction);
+  motors.setPower(1.0f * direction, 1.0f * direction);*/
 
   #ifdef CALCTIME
   static unsigned long CalcTime, MaxCalcTime, AveCalcTime, TimeCounter, NumSamples;
@@ -212,13 +219,15 @@ void Robot::run() {
   if ((millis() - TimeCounter) > 1000) {
     TimeCounter = millis();
     AveCalcTime /= NumSamples;
-    NumSamples = 0;
     Display::clear();
     Serial.print("Ave: ");
     Serial.print((float)AveCalcTime / 1000.0f);
     Display::setPos(0, 1);
     Serial.print("Max: ");
     Serial.print((float)MaxCalcTime / 1000.0f);
+    Display::setPos(8, 1);
+    Serial.print(NumSamples);
+    NumSamples = 0;
     MaxCalcTime = 0;
     AveCalcTime = 0;
   }
@@ -325,4 +334,6 @@ void Robot::standUp() {
       PitchEst += dt * (rateMeas - BiasEst);
       PitchEst += K[0] * y;
       BiasEst  += K[1] * y;
+
+      //PitchEst = pitchMeas;
   }

@@ -1,6 +1,6 @@
 #include "motors.h"
 
-#define USE_ANALOG_WRITE
+//#define USE_ANALOG_WRITE
 
 #include "Wire.h"
 
